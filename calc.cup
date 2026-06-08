@@ -8,7 +8,7 @@ parser code {:
 
 scan with {: return s.next_token(); :};
 
-terminal            SEMI, PLUS, MINUS, TIMES, UMINUS, LPAREN, RPAREN;
+terminal            SEMI, PLUS, MINUS, TIMES, UMINUS, LPAREN, RPAREN, DIVIDE;
 terminal Integer    NUMBER;
 
 non terminal            expr_list;
@@ -16,6 +16,7 @@ non terminal Integer    expr;
 
 precedence left PLUS, MINUS;
 precedence left TIMES;
+precedence left DIVIDE;
 precedence left UMINUS;
 
 expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);:}
@@ -24,6 +25,7 @@ expr_list ::= expr_list expr:e SEMI         {: System.out.println(e);:}
 expr      ::= expr:e1 PLUS  expr:e2         {: RESULT = e1+e2;       :}
              | expr:e1 MINUS expr:e2        {: RESULT = e1-e2;       :}
              | expr:e1 TIMES expr:e2        {: RESULT = e1*e2;       :}
+            | expr:e1 DIVIDE expr:e2        {: RESULT = e1/e2;       :}
              | MINUS expr:e                 {: RESULT = -e;          :}
   	     %prec UMINUS
        | LPAREN expr:e RPAREN	         {: RESULT = e;           :}

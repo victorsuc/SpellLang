@@ -19,6 +19,7 @@ DIGIT = [0-9]+
     "*"           { return new Symbol(sym.TIMES); }
     "("           { return new Symbol(sym.LPAREN); }
     ")"           { return new Symbol(sym.RPAREN); }
+    "/"           { return new Symbol(sym.DIVIDE); }
     {DIGIT}       { return new Symbol(sym.NUMBER, Integer.parseInt(yytext())); }
     .             { System.err.println("Illegal character: " + yytext()); }
 }
