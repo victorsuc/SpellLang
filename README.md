@@ -16,19 +16,30 @@ Front-end de compilador para a linguagem **SpellLang** (tema Harry Potter), usan
 Ou com outro arquivo:
 
 ```bash
-./run.sh meu_programa.txt
+./run.sh examples/meu_programa.txt
 ```
 
 ## Estrutura
 
-| Arquivo | Descrição |
+```
+CompiladorFrontEnd/
+├── src/              Código Java (Main, análise semântica)
+├── grammar/          Especificações JFlex e JCup
+├── examples/         Programas de exemplo
+├── scripts/          Scripts de build e execução
+├── build/            Artefatos gerados e compilados (ignorado pelo git)
+├── lib/              Dependências (JFlex, JCup)
+└── docs/             Documentação adicional
+```
+
+| Pasta / arquivo | Descrição |
 |---|---|
-| `spelllang.flex` | Análise léxica (JFlex) |
-| `spelllang.cup` | Gramática e ações semânticas (JCup) |
-| `Main.java` | Ponto de entrada |
-| `TabelaSimbolos.java` | Análise semântica |
-| `Avaliador.java` | Avaliação de expressões |
-| `input.txt` | Programa de exemplo |
+| `grammar/spelllang.flex` | Análise léxica (JFlex) |
+| `grammar/spelllang.cup` | Gramática e ações semânticas (JCup) |
+| `src/Main.java` | Ponto de entrada |
+| `src/TabelaSimbolos.java` | Análise semântica |
+| `src/Avaliador.java` | Avaliação de expressões |
+| `examples/input.txt` | Programa de exemplo |
 
 ## Exemplo de saída
 

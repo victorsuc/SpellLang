@@ -6,7 +6,7 @@ grimorio QuadribolHogwarts {
     }
 
     feitico principal() {
-        ingrediente numero qtdeRodadaRestantes = 10;
+        ingrediente number qtdeRodadaRestantes = 10;
         ingrediente numero rodadaAtual = 0;
         ingrediente verdadeiroFalso pomoDeOuro = falso;
 

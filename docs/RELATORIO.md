@@ -28,9 +28,9 @@ Ferramentas: JFlex 1.9.1, Java CUP 11b, Java JDK.
 - Comentários `//` e `/* */` ignorados
 - Erro léxico: `Feitiço quebrado! Caractere invalido: X`
 
-### 2.3 Trecho de `spelllang.flex`
+### 2.3 Trecho de `grammar/spelllang.flex`
 
-Ver arquivo `spelllang.flex` — keywords temáticas, literais e delimitadores.
+Ver arquivo `grammar/spelllang.flex` — keywords temáticas, literais e delimitadores.
 
 ### 2.4 Exemplo de tokenização
 
@@ -88,17 +88,17 @@ Implementada em `TabelaSimbolos.java` com cinco regras:
 
 Incluir capturas com programas que violam cada regra acima.
 
-## 5. Integração (`Main.java`)
+## 5. Integração (`src/Main.java`)
 
 ```
-input.txt → scanner (JFlex) → tokens → parser (JCup) → análise sintática/semântica → saída
+examples/input.txt → scanner (JFlex) → tokens → parser (JCup) → análise sintática/semântica → saída
 ```
 
-Executa `input.txt` por padrão (ou o arquivo passado como argumento).
+Executa `examples/input.txt` por padrão (ou o arquivo passado como argumento).
 
 ## 6. Demonstração
 
-Anexar log completo de `./demo.sh` ou `./run.sh` processando `input.txt`.
+Anexar log completo de `./demo.sh` ou `./run.sh` processando `examples/input.txt`.
 
 ## 7. Conclusão
 
@@ -106,8 +106,8 @@ O projeto adapta o material base do professor (`calc.flex`, `calc.cup`, `Main.ja
 
 ## Arquivos de entrega
 
-- `spelllang.flex`, `spelllang.cup`
-- `scanner.java`, `parser.java`, `sym.java` (gerados)
-- `Main.java`, `TabelaSimbolos.java`, `Avaliador.java`, `ErroSemantico.java`
-- `input.txt`, `README.md`, `run.sh`, `demo.sh`
+- `grammar/spelllang.flex`, `grammar/spelllang.cup`
+- `build/scanner.java`, `build/parser.java`, `build/sym.java` (gerados)
+- `src/Main.java`, `src/TabelaSimbolos.java`, `src/Avaliador.java`, `src/ErroSemantico.java`
+- `examples/input.txt`, `README.md`, `run.sh`, `demo.sh`
 - Este relatório (PDF)

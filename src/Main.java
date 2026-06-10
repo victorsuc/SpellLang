@@ -4,7 +4,7 @@ public class Main {
 
     public static void main(String[] args) {
         try {
-            String arquivo = args.length > 0 ? args[0] : "input.txt";
+            String arquivo = args.length > 0 ? args[0] : "examples/input.txt";
             FileReader reader = new FileReader(arquivo);
             parser parserObj = new parser(new scanner(reader));
             parserObj.parse();
