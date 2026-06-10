@@ -117,10 +117,6 @@ public class TabelaSimbolos {
         sairEscopo();
     }
 
-    public void chamarFeitico(String nome, int numArgs) {
-        validarChamada(nome, numArgs);
-    }
-
     public void declararIngrediente(String nome, String tipoDecl, Object valor) {
         TipoIngrediente tipo = TipoIngrediente.fromString(tipoDecl);
         verificarTipo(tipoDecl, valor);
@@ -146,23 +142,6 @@ public class TabelaSimbolos {
         }
         verificarTipo(entrada.tipo.getNome(), valor);
         entrada.valor = normalizarValor(entrada.tipo, valor);
-    }
-
-    public void iniciarFeitico(String nome, List<Parametro> params) {
-        registrarAssinatura(nome, params);
-        entrarFeitico(params, valoresPadrao(params));
-    }
-
-    public void finalizarFeitico() {
-        sairFeitico();
-    }
-
-    private List<Object> valoresPadrao(List<Parametro> params) {
-        List<Object> valores = new ArrayList<>();
-        for (Parametro p : params) {
-            valores.add(valorPadrao(p.tipo));
-        }
-        return valores;
     }
 
     public void verificarTipo(String tipoDecl, Object valor) {
@@ -216,20 +195,5 @@ public class TabelaSimbolos {
             return ((Integer) valor).doubleValue();
         }
         return valor;
-    }
-
-    private Object valorPadrao(TipoIngrediente tipo) {
-        switch (tipo) {
-            case NUMERO:
-                return 0;
-            case POCAO:
-                return 0.0;
-            case PERGAMINHO:
-                return "";
-            case VERDADEIRO_FALSO:
-                return false;
-            default:
-                return null;
-        }
     }
 }

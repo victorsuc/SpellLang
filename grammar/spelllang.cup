@@ -39,10 +39,6 @@ parser code {:
         System.err.println("Erro sintatico na linha " + sym.left + ", coluna " + sym.right);
     }
 
-    private int tamanhoParams(List params) {
-        return params == null ? 0 : params.size();
-    }
-
     private String format(Object valor) {
         if (valor instanceof String) {
             return "\"" + valor + "\"";
@@ -184,9 +180,6 @@ feitico_corpo ::=
     {:
         if (!encerrado) {
             throw new ErroSemantico("feitico '" + feiticoAtual + "' nao encerrou com 'malfeito feito'.");
-        }
-        if (feiticos.containsKey(feiticoAtual)) {
-            throw new ErroSemantico("feitico '" + feiticoAtual + "' ja foi definido.");
         }
         tabela.registrarAssinatura(feiticoAtual, paramsAtuais);
         feiticos.put(feiticoAtual, new FeiticoReg(paramsAtuais, c));
