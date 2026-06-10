@@ -12,7 +12,6 @@ WHITESPACE = [ \t\r\n]+
 LETRA      = [a-zA-Z_]
 ID         = {LETRA}([a-zA-Z0-9_])*
 DIGIT      = [0-9]+
-DECIMAL    = {DIGIT}+"."{DIGIT}+
 STRING     = \"([^\\\"]|\\.)*\"
 
 %%
@@ -25,7 +24,6 @@ STRING     = \"([^\\\"]|\\.)*\"
     "feitico"         { return new Symbol(sym.FEITICO, yyline + 1, yycolumn + 1); }
     "ingrediente"     { return new Symbol(sym.INGREDIENTE, yyline + 1, yycolumn + 1); }
     "numero"          { return new Symbol(sym.NUMERO, yyline + 1, yycolumn + 1); }
-    "pocao"           { return new Symbol(sym.POCAO, yyline + 1, yycolumn + 1); }
     "pergaminho"      { return new Symbol(sym.PERGAMINHO, yyline + 1, yycolumn + 1); }
     "verdadeiroFalso" { return new Symbol(sym.VERDADEIRO_FALSO, yyline + 1, yycolumn + 1); }
     "seMagico"        { return new Symbol(sym.SE_MAGICO, yyline + 1, yycolumn + 1); }
@@ -36,18 +34,11 @@ STRING     = \"([^\\\"]|\\.)*\"
     "falso"           { return new Symbol(sym.FALSO, yyline + 1, yycolumn + 1); }
     "malfeito feito"  { return new Symbol(sym.MALFEITO_FEITO, yyline + 1, yycolumn + 1); }
 
-    "=="              { return new Symbol(sym.EQ, yyline + 1, yycolumn + 1); }
-    "!="              { return new Symbol(sym.NEQ, yyline + 1, yycolumn + 1); }
-    ">="              { return new Symbol(sym.GTE, yyline + 1, yycolumn + 1); }
-    "<="              { return new Symbol(sym.LTE, yyline + 1, yycolumn + 1); }
     ">"               { return new Symbol(sym.GT, yyline + 1, yycolumn + 1); }
-    "<"               { return new Symbol(sym.LT, yyline + 1, yycolumn + 1); }
 
     "="               { return new Symbol(sym.ASSIGN, yyline + 1, yycolumn + 1); }
     "+"               { return new Symbol(sym.PLUS, yyline + 1, yycolumn + 1); }
     "-"               { return new Symbol(sym.MINUS, yyline + 1, yycolumn + 1); }
-    "*"               { return new Symbol(sym.TIMES, yyline + 1, yycolumn + 1); }
-    "/"               { return new Symbol(sym.DIVIDE, yyline + 1, yycolumn + 1); }
 
     ";"               { return new Symbol(sym.SEMI, yyline + 1, yycolumn + 1); }
     ","               { return new Symbol(sym.COMMA, yyline + 1, yycolumn + 1); }
@@ -56,7 +47,6 @@ STRING     = \"([^\\\"]|\\.)*\"
     "("               { return new Symbol(sym.LPAREN, yyline + 1, yycolumn + 1); }
     ")"               { return new Symbol(sym.RPAREN, yyline + 1, yycolumn + 1); }
 
-    {DECIMAL}         { return new Symbol(sym.DECIMAL, yyline + 1, yycolumn + 1, Double.parseDouble(yytext())); }
     {DIGIT}           { return new Symbol(sym.NUMBER, yyline + 1, yycolumn + 1, Integer.parseInt(yytext())); }
     {STRING}          {
                           String raw = yytext();

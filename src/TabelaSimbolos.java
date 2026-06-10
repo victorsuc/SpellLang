@@ -9,7 +9,6 @@ public class TabelaSimbolos {
 
     public enum TipoIngrediente {
         NUMERO("numero"),
-        POCAO("pocao"),
         PERGAMINHO("pergaminho"),
         VERDADEIRO_FALSO("verdadeiroFalso");
 
@@ -109,7 +108,7 @@ public class TabelaSimbolos {
             Object valor = args.get(i);
             verificarTipo(p.tipo.getNome(), valor);
             Map<String, EntradaIngrediente> escopo = escopos.peek();
-            escopo.put(p.nome, new EntradaIngrediente(p.tipo, normalizarValor(p.tipo, valor)));
+            escopo.put(p.nome, new EntradaIngrediente(p.tipo, valor));
         }
     }
 
@@ -124,7 +123,7 @@ public class TabelaSimbolos {
         if (escopo.containsKey(nome)) {
             throw new ErroSemantico("ingrediente '" + nome + "' ja foi declarado.");
         }
-        escopo.put(nome, new EntradaIngrediente(tipo, normalizarValor(tipo, valor)));
+        escopo.put(nome, new EntradaIngrediente(tipo, valor));
     }
 
     public Object usarIngrediente(String nome) {
@@ -141,14 +140,7 @@ public class TabelaSimbolos {
             throw new ErroSemantico("ingrediente '" + nome + "' nao foi declarado.");
         }
         verificarTipo(entrada.tipo.getNome(), valor);
-        entrada.valor = normalizarValor(entrada.tipo, valor);
-    }
-
-    public void verificarTipo(String tipoDecl, Object valor) {
-        String encontrado = tipoDe(valor);
-        if (!tiposCompativeis(tipoDecl, encontrado)) {
-            throw new ErroSemantico("tipo invalido. Esperado " + tipoDecl + ", encontrado " + encontrado + ".");
-        }
+        entrada.valor = valor;
     }
 
     public void verificarCondicaoBooleana(Object valor, String contexto) {
@@ -167,33 +159,23 @@ public class TabelaSimbolos {
         return null;
     }
 
+    private void verificarTipo(String tipoDecl, Object valor) {
+        String encontrado = tipoDe(valor);
+        if (!tipoDecl.equals(encontrado)) {
+            throw new ErroSemantico("tipo invalido. Esperado " + tipoDecl + ", encontrado " + encontrado + ".");
+        }
+    }
+
     private String tipoDe(Object valor) {
         if (valor instanceof Integer) {
             return "numero";
         }
-        if (valor instanceof Double) {
-            return "pocao";
+        if (valor instanceof Boolean) {
+            return "verdadeiroFalso";
         }
         if (valor instanceof String) {
             return "pergaminho";
         }
-        if (valor instanceof Boolean) {
-            return "verdadeiroFalso";
-        }
         return "desconhecido";
-    }
-
-    private boolean tiposCompativeis(String esperado, String encontrado) {
-        if (esperado.equals(encontrado)) {
-            return true;
-        }
-        return "pocao".equals(esperado) && "numero".equals(encontrado);
-    }
-
-    private Object normalizarValor(TipoIngrediente tipo, Object valor) {
-        if (tipo == TipoIngrediente.POCAO && valor instanceof Integer) {
-            return ((Integer) valor).doubleValue();
-        }
-        return valor;
     }
 }

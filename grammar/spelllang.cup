@@ -70,14 +70,6 @@ parser code {:
         };
     }
 
-    private Valor unaria(final String op, final Valor expr) {
-        return new Valor() {
-            public Object avaliar(TabelaSimbolos tabela) {
-                return Avaliador.aplicar(0, op, expr.avaliar(tabela));
-            }
-        };
-    }
-
     private void executarBloco(List comandos) {
         for (int i = 0; i < comandos.size(); i++) {
             Acao acao = (Acao) comandos.get(i);
@@ -108,20 +100,19 @@ parser code {:
 scan with {: return s.next_token(); :};
 
 terminal GRIMORIO, FEITICO, INGREDIENTE;
-terminal NUMERO, POCAO, PERGAMINHO, VERDADEIRO_FALSO;
+terminal NUMERO, PERGAMINHO, VERDADEIRO_FALSO;
 terminal SE_MAGICO, SENAO_MAGICO, ENQUANTO_MAGICO;
 terminal REVELAR, MALFEITO_FEITO;
 terminal VERDADEIRO, FALSO;
 
-terminal PLUS, MINUS, TIMES, DIVIDE, UMINUS;
-terminal EQ, NEQ, GT, LT, GTE, LTE;
+terminal PLUS, MINUS;
+terminal GT;
 terminal ASSIGN;
 
 terminal SEMI, COMMA, LBRACE, RBRACE, LPAREN, RPAREN;
 
 terminal String ID;
 terminal Integer NUMBER;
-terminal Double DECIMAL;
 terminal String STRING;
 
 non terminal            programa;
@@ -140,10 +131,8 @@ non terminal List       lista_args_opt;
 non terminal List       arg_list;
 non terminal Valor      expr;
 
-precedence left EQ, NEQ, GT, LT, GTE, LTE;
 precedence left PLUS, MINUS;
-precedence left TIMES, DIVIDE;
-precedence left UMINUS;
+precedence left GT;
 
 start with programa;
 
@@ -288,7 +277,6 @@ comando ::=
 
 tipo ::=
       NUMERO           {: RESULT = "numero"; :}
-    | POCAO            {: RESULT = "pocao"; :}
     | PERGAMINHO       {: RESULT = "pergaminho"; :}
     | VERDADEIRO_FALSO {: RESULT = "verdadeiroFalso"; :}
 ;
@@ -331,20 +319,11 @@ arg_list ::=
 ;
 
 expr ::=
-      expr:e1 PLUS expr:e2   {: RESULT = binaria("+", e1, e2); :}
-    | expr:e1 MINUS expr:e2  {: RESULT = binaria("-", e1, e2); :}
-    | expr:e1 TIMES expr:e2  {: RESULT = binaria("*", e1, e2); :}
-    | expr:e1 DIVIDE expr:e2 {: RESULT = binaria("/", e1, e2); :}
-    | expr:e1 EQ expr:e2     {: RESULT = binaria("==", e1, e2); :}
-    | expr:e1 NEQ expr:e2    {: RESULT = binaria("!=", e1, e2); :}
-    | expr:e1 GT expr:e2     {: RESULT = binaria(">", e1, e2); :}
-    | expr:e1 LT expr:e2     {: RESULT = binaria("<", e1, e2); :}
-    | expr:e1 GTE expr:e2    {: RESULT = binaria(">=", e1, e2); :}
-    | expr:e1 LTE expr:e2    {: RESULT = binaria("<=", e1, e2); :}
-    | MINUS expr:e            {: RESULT = unaria("-", e); :} %prec UMINUS
-    | LPAREN expr:e RPAREN   {: RESULT = e; :}
-    | NUMBER:n               {: RESULT = lit(n); :}
-    | DECIMAL:d              {: RESULT = lit(d); :}
+      expr:e1 PLUS expr:e2  {: RESULT = binaria("+", e1, e2); :}
+    | expr:e1 MINUS expr:e2 {: RESULT = binaria("-", e1, e2); :}
+    | expr:e1 GT expr:e2    {: RESULT = binaria(">", e1, e2); :}
+    | LPAREN expr:e RPAREN  {: RESULT = e; :}
+    | NUMBER:n              {: RESULT = lit(n); :}
     | STRING:s               {: RESULT = lit(s); :}
     | VERDADEIRO             {: RESULT = lit(true); :}
     | FALSO                  {: RESULT = lit(false); :}
