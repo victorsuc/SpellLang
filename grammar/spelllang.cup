@@ -79,9 +79,6 @@ parser code {:
 
     private void invocarFeitico(String nome, List args) {
         FeiticoReg feitico = (FeiticoReg) feiticos.get(nome);
-        if (feitico == null) {
-            throw new ErroSemantico("feitico '" + nome + "' nao foi definido.");
-        }
         tabela.validarChamada(nome, args.size());
         System.out.println("chamando feitico " + nome);
         tabela.entrarFeitico(feitico.parametros, args);
