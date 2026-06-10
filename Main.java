@@ -1,25 +1,21 @@
 import java.io.*;
 
 public class Main {
+
     public static void main(String[] args) {
         try {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
-            scanner scanner = new scanner(reader);
-            parser parser = new parser(scanner);
-
-            System.out.println("Enter expressions (end with semicolon ';'):");
-
-            while (true) {
-                System.out.print("> ");
-                String input = reader.readLine();
-                if (input == null || input.equalsIgnoreCase("exit")) break;
-
-                // Feed input to the scanner
-                scanner.yyreset(new StringReader(input));
-                parser.parse();
-            }
+            String arquivo = args.length > 0 ? args[0] : "input.txt";
+            FileReader reader = new FileReader(arquivo);
+            parser parserObj = new parser(new scanner(reader));
+            parserObj.parse();
+            reader.close();
+        } catch (ErroSemantico e) {
+            System.err.println(e.getMessage());
+            System.exit(1);
         } catch (Exception e) {
+            System.err.println("Feitico quebrado!");
             e.printStackTrace();
+            System.exit(1);
         }
     }
 }

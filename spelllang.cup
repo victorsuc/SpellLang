@@ -1,0 +1,359 @@
+import java_cup.runtime.*;
+import java.io.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+parser code {:
+    scanner s;
+    TabelaSimbolos tabela = new TabelaSimbolos();
+    Map feiticos = new HashMap();
+    boolean encerrado = false;
+    String feiticoAtual = "";
+    List paramsAtuais = new ArrayList();
+
+    interface Acao {
+        void executar();
+    }
+
+    interface Valor {
+        Object avaliar(TabelaSimbolos tabela);
+    }
+
+    class FeiticoReg {
+        List parametros;
+        List corpo;
+
+        FeiticoReg(List parametros, List corpo) {
+            this.parametros = parametros;
+            this.corpo = corpo;
+        }
+    }
+
+    parser(scanner s) {
+        this.s = s;
+    }
+
+    public void syntax_error(Symbol sym) {
+        System.err.println("Erro sintatico na linha " + sym.left + ", coluna " + sym.right);
+    }
+
+    private int tamanhoParams(List params) {
+        return params == null ? 0 : params.size();
+    }
+
+    private String format(Object valor) {
+        if (valor instanceof String) {
+            return "\"" + valor + "\"";
+        }
+        return String.valueOf(valor);
+    }
+
+    private Valor lit(final Object valor) {
+        return new Valor() {
+            public Object avaliar(TabelaSimbolos tabela) {
+                return valor;
+            }
+        };
+    }
+
+    private Valor variavel(final String nome) {
+        return new Valor() {
+            public Object avaliar(TabelaSimbolos tabela) {
+                return tabela.usarIngrediente(nome);
+            }
+        };
+    }
+
+    private Valor binaria(final String op, final Valor esq, final Valor dir) {
+        return new Valor() {
+            public Object avaliar(TabelaSimbolos tabela) {
+                return Avaliador.aplicar(esq.avaliar(tabela), op, dir.avaliar(tabela));
+            }
+        };
+    }
+
+    private Valor unaria(final String op, final Valor expr) {
+        return new Valor() {
+            public Object avaliar(TabelaSimbolos tabela) {
+                return Avaliador.aplicar(0, op, expr.avaliar(tabela));
+            }
+        };
+    }
+
+    private void executarBloco(List comandos) {
+        for (int i = 0; i < comandos.size(); i++) {
+            Acao acao = (Acao) comandos.get(i);
+            acao.executar();
+        }
+    }
+
+    private void invocarFeitico(String nome, List args) {
+        FeiticoReg feitico = (FeiticoReg) feiticos.get(nome);
+        if (feitico == null) {
+            throw new ErroSemantico("feitico '" + nome + "' nao foi definido.");
+        }
+        tabela.validarChamada(nome, args.size());
+        System.out.println("chamando feitico " + nome);
+        tabela.entrarFeitico(feitico.parametros, args);
+        executarBloco(feitico.corpo);
+        tabela.sairFeitico();
+    }
+
+    private void executarPrincipal() {
+        if (!feiticos.containsKey("principal")) {
+            throw new ErroSemantico("feitico 'principal' nao foi definido.");
+        }
+        invocarFeitico("principal", new ArrayList());
+    }
+:};
+
+scan with {: return s.next_token(); :};
+
+terminal GRIMORIO, FEITICO, INGREDIENTE;
+terminal NUMERO, POCAO, PERGAMINHO, VERDADEIRO_FALSO;
+terminal SE_MAGICO, SENAO_MAGICO, ENQUANTO_MAGICO;
+terminal REVELAR, MALFEITO_FEITO;
+terminal VERDADEIRO, FALSO;
+
+terminal PLUS, MINUS, TIMES, DIVIDE, UMINUS;
+terminal EQ, NEQ, GT, LT, GTE, LTE;
+terminal ASSIGN;
+
+terminal SEMI, COMMA, LBRACE, RBRACE, LPAREN, RPAREN;
+
+terminal String ID;
+terminal Integer NUMBER;
+terminal Double DECIMAL;
+terminal String STRING;
+
+non terminal            programa;
+non terminal            programa_inicio;
+non terminal            lista_feiticos;
+non terminal            feitico;
+non terminal            feitico_header;
+non terminal            feitico_corpo;
+non terminal List       comandos;
+non terminal Acao       comando;
+non terminal String     tipo;
+non terminal TabelaSimbolos.Parametro param;
+non terminal List       lista_params_opt;
+non terminal List       param_list;
+non terminal List       lista_args_opt;
+non terminal List       arg_list;
+non terminal Valor      expr;
+
+precedence left EQ, NEQ, GT, LT, GTE, LTE;
+precedence left PLUS, MINUS;
+precedence left TIMES, DIVIDE;
+precedence left UMINUS;
+
+start with programa;
+
+programa ::=
+    programa_inicio lista_feiticos RBRACE
+    {: executarPrincipal(); System.out.println("malfeito feito."); :}
+;
+
+programa_inicio ::=
+    GRIMORIO ID:n LBRACE
+    {: System.out.println("grimorio " + n); :}
+;
+
+lista_feiticos ::=
+      lista_feiticos feitico
+    | feitico
+;
+
+feitico ::=
+    feitico_header feitico_corpo
+;
+
+feitico_header ::=
+    FEITICO ID:n LPAREN lista_params_opt:p RPAREN
+    {:
+        feiticoAtual = n;
+        encerrado = false;
+        paramsAtuais = p;
+    :}
+;
+
+feitico_corpo ::=
+    LBRACE comandos:c RBRACE
+    {:
+        if (!encerrado) {
+            throw new ErroSemantico("feitico '" + feiticoAtual + "' nao encerrou com 'malfeito feito'.");
+        }
+        if (feiticos.containsKey(feiticoAtual)) {
+            throw new ErroSemantico("feitico '" + feiticoAtual + "' ja foi definido.");
+        }
+        tabela.registrarAssinatura(feiticoAtual, paramsAtuais);
+        feiticos.put(feiticoAtual, new FeiticoReg(paramsAtuais, c));
+        encerrado = false;
+    :}
+;
+
+comandos ::=
+      comandos:c comando:cmd
+    {: c.add(cmd); RESULT = c; :}
+    | comando:cmd
+    {:
+        ArrayList lista = new ArrayList();
+        lista.add(cmd);
+        RESULT = lista;
+    :}
+;
+
+comando ::=
+      INGREDIENTE tipo:t ID:i ASSIGN expr:e SEMI
+    {:
+        final String tipoFinal = t;
+        final String idFinal = i;
+        final Valor valorFinal = e;
+        RESULT = new Acao() {
+            public void executar() {
+                Object v = valorFinal.avaliar(tabela);
+                tabela.declararIngrediente(idFinal, tipoFinal, v);
+                System.out.println("ingrediente " + idFinal + " inicializado = " + format(v));
+            }
+        };
+    :}
+    | ID:i ASSIGN expr:e SEMI
+    {:
+        final String idFinal = i;
+        final Valor valorFinal = e;
+        RESULT = new Acao() {
+            public void executar() {
+                Object v = valorFinal.avaliar(tabela);
+                tabela.atribuirIngrediente(idFinal, v);
+                System.out.println(idFinal + " = " + format(v));
+            }
+        };
+    :}
+    | SE_MAGICO LPAREN expr:e RPAREN LBRACE comandos:c1 RBRACE
+      SENAO_MAGICO LBRACE comandos:c2 RBRACE
+    {:
+        final Valor condicao = e;
+        final List entao = c1;
+        final List senao = c2;
+        RESULT = new Acao() {
+            public void executar() {
+                Object valor = condicao.avaliar(tabela);
+                tabela.verificarCondicaoBooleana(valor, "seMagico");
+                boolean ok = (Boolean) valor;
+                System.out.println("seMagico: " + (ok ? "sim" : "nao"));
+                executarBloco(ok ? entao : senao);
+            }
+        };
+    :}
+    | ENQUANTO_MAGICO LPAREN expr:e RPAREN LBRACE comandos:c RBRACE
+    {:
+        final Valor condicao = e;
+        final List corpo = c;
+        RESULT = new Acao() {
+            public void executar() {
+                int iteracao = 1;
+                while (true) {
+                    Object valor = condicao.avaliar(tabela);
+                    tabela.verificarCondicaoBooleana(valor, "enquantoMagico");
+                    if (!(Boolean) valor) {
+                        break;
+                    }
+                    System.out.println("enquantoMagico: rodada " + iteracao++);
+                    executarBloco(corpo);
+                }
+            }
+        };
+    :}
+    | REVELAR expr:e SEMI
+    {:
+        final Valor valorFinal = e;
+        RESULT = new Acao() {
+            public void executar() {
+                System.out.println("revelar: " + format(valorFinal.avaliar(tabela)));
+            }
+        };
+    :}
+    | ID:n LPAREN lista_args_opt:a RPAREN SEMI
+    {:
+        final String nome = n;
+        final List argsExpr = a;
+        RESULT = new Acao() {
+            public void executar() {
+                ArrayList args = new ArrayList();
+                for (int i = 0; i < argsExpr.size(); i++) {
+                    args.add(((Valor) argsExpr.get(i)).avaliar(tabela));
+                }
+                invocarFeitico(nome, args);
+            }
+        };
+    :}
+    | MALFEITO_FEITO SEMI
+    {: encerrado = true; RESULT = new Acao() { public void executar() { } }; :}
+;
+
+tipo ::=
+      NUMERO           {: RESULT = "numero"; :}
+    | POCAO            {: RESULT = "pocao"; :}
+    | PERGAMINHO       {: RESULT = "pergaminho"; :}
+    | VERDADEIRO_FALSO {: RESULT = "verdadeiroFalso"; :}
+;
+
+lista_params_opt ::=
+      /* empty */ {: RESULT = new ArrayList(); :}
+    | param_list:pl {: RESULT = pl; :}
+;
+
+param_list ::=
+      param:p
+    {:
+        ArrayList lista = new ArrayList();
+        lista.add(p);
+        RESULT = lista;
+    :}
+    | param_list:pl COMMA param:p
+    {: pl.add(p); RESULT = pl; :}
+;
+
+param ::=
+    tipo:t ID:i
+    {: RESULT = new TabelaSimbolos.Parametro(TabelaSimbolos.TipoIngrediente.fromString(t), i); :}
+;
+
+lista_args_opt ::=
+      /* empty */ {: RESULT = new ArrayList(); :}
+    | arg_list:al {: RESULT = al; :}
+;
+
+arg_list ::=
+      expr:e
+    {:
+        ArrayList lista = new ArrayList();
+        lista.add(e);
+        RESULT = lista;
+    :}
+    | arg_list:al COMMA expr:e
+    {: al.add(e); RESULT = al; :}
+;
+
+expr ::=
+      expr:e1 PLUS expr:e2   {: RESULT = binaria("+", e1, e2); :}
+    | expr:e1 MINUS expr:e2  {: RESULT = binaria("-", e1, e2); :}
+    | expr:e1 TIMES expr:e2  {: RESULT = binaria("*", e1, e2); :}
+    | expr:e1 DIVIDE expr:e2 {: RESULT = binaria("/", e1, e2); :}
+    | expr:e1 EQ expr:e2     {: RESULT = binaria("==", e1, e2); :}
+    | expr:e1 NEQ expr:e2    {: RESULT = binaria("!=", e1, e2); :}
+    | expr:e1 GT expr:e2     {: RESULT = binaria(">", e1, e2); :}
+    | expr:e1 LT expr:e2     {: RESULT = binaria("<", e1, e2); :}
+    | expr:e1 GTE expr:e2    {: RESULT = binaria(">=", e1, e2); :}
+    | expr:e1 LTE expr:e2    {: RESULT = binaria("<=", e1, e2); :}
+    | MINUS expr:e            {: RESULT = unaria("-", e); :} %prec UMINUS
+    | LPAREN expr:e RPAREN   {: RESULT = e; :}
+    | NUMBER:n               {: RESULT = lit(n); :}
+    | DECIMAL:d              {: RESULT = lit(d); :}
+    | STRING:s               {: RESULT = lit(s); :}
+    | VERDADEIRO             {: RESULT = lit(true); :}
+    | FALSO                  {: RESULT = lit(false); :}
+    | ID:i                   {: RESULT = variavel(i); :}
+    ;

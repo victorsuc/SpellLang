@@ -1,0 +1,31 @@
+grimorio QuadribolHogwarts {
+
+    feitico lumos() {
+        revelar "Lumos!";
+        malfeito feito;
+    }
+
+    feitico principal() {
+        ingrediente numero qtdeRodadaRestantes = 10;
+        ingrediente numero rodadaAtual = 0;
+        ingrediente verdadeiroFalso pomoDeOuro = falso;
+
+        lumos();
+
+        enquantoMagico (qtdeRodadaRestantes > 0) {
+            revelar rodadaAtual;
+            rodadaAtual = rodadaAtual + 1;
+            qtdeRodadaRestantes = qtdeRodadaRestantes - 1;
+        }
+
+        pomoDeOuro = verdadeiro;
+
+        seMagico (pomoDeOuro) {
+            revelar "Pomo de ouro capturado! Fim de jogo.";
+        } senaoMagico {
+            revelar "Jogo continua...";
+        }
+
+        malfeito feito;
+    }
+}
